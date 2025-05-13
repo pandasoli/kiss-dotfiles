@@ -1,0 +1,31 @@
+#!/bin/sh -e
+
+# Usage: netdrop                   Start server
+#        netdrop host-number file  Send file to server
+#        netdrop host-number       Send piped text to server
+
+get_local_ip() {
+	ip route get 10.254.254.254 2> /dev/null | awk '{print $7; exit}'
+}
+
+PORT="${PORT:-12345}"
+
+if [ $# -eq 0 ]; then
+	HOST=$(get_local_ip)
+
+	echo "Server is listening on $HOST:$PORT"
+	nc -lp "$PORT" | {
+		read -r f
+		read -r s
+		dd of="$f" count="$s" bs=1
+		kill "$PPID"
+	}
+else
+	HOST="192.168.0.$1"
+	FILE=${2:-/dev/stdin}
+	FILENAME=${FILE##*/}
+	SIZE="$(wc -c < "$FILE")"
+
+	echo "Connecting to server at $HOST:$PORT"
+	{ echo "$FILENAME"; echo "$SIZE"; cat "$FILE"; } | nc "$HOST" "$PORT"
+fi

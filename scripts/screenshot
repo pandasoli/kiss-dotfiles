@@ -1,0 +1,9 @@
+#!/bin/sh -e
+
+if [ "$1" == "-s" ]; then
+	grim -t png -g "$(slurp)" - > /tmp/screenshot.png
+else
+	grim -t png - > /tmp/screenshot.png
+fi
+
+waycopy -t image/png < /tmp/screenshot.png

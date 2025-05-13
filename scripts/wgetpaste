@@ -1,0 +1,18 @@
+#!/bin/sh -e
+
+# Usage: wgetpaste file
+#        | wgetpaste
+#        wgetpaste <
+
+if [ -n "$1" ]; then
+	response=$(curl -s -F "file=@$1" https://0x0.st)
+else
+	response=$(curl -s -F "file=@-" https://0x0.st)
+fi
+
+if [ $? -eq 0 ]; then
+	echo "$response"
+else
+	echo "Failed to upload file."
+	exit 1
+fi

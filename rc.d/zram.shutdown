@@ -1,0 +1,13 @@
+#!/bin/sh -e
+
+# Disable the swap devices
+# Reset the swap devices
+
+for dev in 0 1 2 3; do
+	swapoff  /dev/zram$dev
+	echo 1 > /sys/block/zram$dev/reset
+done
+
+# Unmount /tmp, reset zram device.
+umount   /tmp
+echo 1 > /sys/block/zram4/reset

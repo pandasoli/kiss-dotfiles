@@ -1,0 +1,49 @@
+#!/bin/sh -e
+
+bytes_to_human() {
+	bytes=$1
+	if [ "$bytes" -lt 1000 ]; then
+		printf "%dB" "$bytes"
+	elif [ "$bytes" -lt 1000000 ]; then
+		printf "%dK" "$(( (bytes + 500) / 1000 ))"
+	elif [ "$bytes" -lt 1000000000 ]; then
+		printf "%dM" "$(( (bytes + 500000) / 1000000 ))"
+	elif [ "$bytes" -lt 1000000000000 ]; then
+		printf "%dG" "$(( (bytes + 500000000) / 1000000000 ))"
+	else
+		printf "%dT" "$(( (bytes + 500000000000) / 1000000000000 ))"
+	fi
+}
+
+c1="$(printf '%b' "\e[1;31m")"
+ce="$(printf '%b' "\e[m")"
+
+printf "%-10s %-10s %-4s %-10s\n" "NAME" "SIZE" "MOUNTPOINT"
+
+for dev in /sys/block/sd[a-z]; do
+	dev=${dev##*/}
+	size=$(($(cat /sys/block/$dev/size) * 512))
+
+	printf "%-10s %-10s %-4s\n" "$dev" "$(bytes_to_human $size)"
+
+	total_parts=0
+	for part in /sys/block/$dev/$dev[0-9]*; do
+		total_parts=$((total_parts + 1))
+	done
+
+	count=0
+	for part in /sys/block/$dev/$dev[0-9]*; do
+		count=$((count + 1))
+		prefix=$([ "$count" -eq "$total_parts" ] && echo "╰─" || echo "├─")
+
+		part=${part##*/}
+		size=$(($(cat /sys/block/$dev/$part/size) * 512))
+
+		mpoint=$(df "/dev/$part" 2>/dev/null | awk 'END {if (NR > 1) print $6}')
+		swap=$(grep -q "/dev/$part" /proc/swaps && echo 0 || echo 1)
+
+		label=$([ "$swap" -eq 0 ] && echo "[SWAP]" || echo "$mpoint")
+
+		printf "%s$c1%-7s$ce %-10s %-10s\n" "$prefix " "$part" "$(bytes_to_human $size)" "$label"
+	done
+done
