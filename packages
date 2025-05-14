@@ -1,84 +1,8 @@
 dwl https://codeberg.org/dwl/dwl/archive/v0.7.tar.gz
-dbus https://dbus.freedesktop.org/releases/dbus/dbus-1.16.2.tar.xz
-xdg-desktop-portal https://github.com/flatpak/xdg-desktop-portal/archive/refs/tags/1.20.0.tar.gz
-	fuse
-	json-glib
-
-	meson setup builddir \
-		--prefix=/usr \
-		-Dflatpak-interfaces=disabled \
-		-Dgeoclue=disabled \
-		-Dgudev=disabled \
-		-Dsystemd=disabled \
-		-Ddocumentation=disabled \
-		-Dtests=disabled \
-		-Dinstalled-tests=false \
-		-Dman-pages=disabled \
-		-Dsandboxed-image-validation=enabled \
-		-Dsandboxed-sound-validation=enabled \
-		-Ddbus-service-dir=/usr/share/dbus-1/services \
-		-Dsystemd-user-unit-dir=no
-
-	bwrap https://github.com/containers/bubblewrap/archive/refs/tags/v0.11.0.tar.gz
-		libcap
-
-	gstreamer https://gstreamer.freedesktop.org/src/gstreamer/gstreamer-1.26.1.tar.xz
-		meson setup builddir \
-			--prefix=/usr \
-			-Dgst_debug=false \
-			-Dtracer_hooks=false \
-			-Dextra-checks=disabled \
-			-Dglib_debug=disabled \
-			-Dglib_assert=false \
-			-Dglib_checks=false \
-			-Dpoisoning=false \
-			-Dlibunwind=disabled \
-			-Dlibdw=disabled \
-			-Ddbghelp=disabled \
-			-Dbash-completion=disabled \
-			-Ddoc=disabled \
-			-Dexamples=disabled \
-			-Dtests=disabled \
-			-Dbenchmarks=disabled \
-			-Dtools=disabled \
-			-Dintrospection=disabled \
-			-Dnls=disabled \
-			-Dptp-helper=disabled \
-			-Dmemory-alignment=malloc \
-			-Doption-parsing=false \
-			-Dregistry=false
-	gst-plugins-base https://gstreamer.freedesktop.org/src/gst-plugins-base/gst-plugins-base-1.26.1.tar.xz
-		meson setup builddir \
-			--prefix=/usr \
-			-Dx11=disabled -Dxshm=disabled -Dxvideo=disabled -Dxi=disabled \
-			-Dcdparanoia=disabled -Dlibvisual=disabled -Dtheora=disabled \
-			-Dtremor=disabled -Dvorbis=disabled -Dogg=disabled -Dopus=disabled \
-			-Dgl=disabled -Dgl-graphene=disabled -Dgl-jpeg=disabled -Dgl-png=disabled \
-			-Dadder=disabled -Dcompositor=disabled -Ddebugutils=disabled \
-			-Ddsd=disabled -Doverlaycomposition=disabled -Dsubparse=disabled \
-			-Dtcp=disabled -Dvideotestsrc=disabled \
-			-Ddoc=disabled -Dexamples=disabled -Dtests=disabled -Dtools=disabled \
-			-Dintrospection=disabled -Dnls=disabled \
-			-Daudioconvert=enabled -Daudioresample=enabled -Dvolume=enabled \
-			-Dtypefind=enabled -Dplayback=enabled -Dencoding=enabled \
-			-Dalsa=$(if kiss l alsa-lib >/dev/null; then echo enabled; else echo disabled; fi) \
-			-Dpango=$(if kiss l pango >/dev/null; then echo enabled; else echo disabled; fi)
-
-xdg-desktop-portal-wlr https://github.com/emersion/xdg-desktop-portal-wlr/archive/refs/tags/v0.7.1.tar.gz
-	inih
-
-	basu https://git.sr.ht/~emersion/basu/archive/v0.2.1.tar.gz
-		gperf
-
-		meson setup builddir \
-			--prefix=/usr \
-			-Ddebug-extra="[]" \
-			-Dnobody-user=disabled \
-			-Daudit=disabled \
-			-Dlibcap=disabled
 
 JetBrainsMono https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/JetBrainsMono.tar.xz
 monospace https://1001fonts.com/download/monospace.zip
+Blobmoji https://github.com/C1710/blobmoji/releases/download/v15.1-beta1/Blobmoji.ttf
 
 BreezeX=Light https://ocs-dl.fra1.cdn.digitaloceanspaces.com/data/files/1636718804/BreezeX-Light.tar.xz?response-content-disposition=attachment%3B%2520BreezeX-Light.tar.xz&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=RWJAQUNCHT7V2NCLZ2AL%2F20250510%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250510T182320Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Signature=fb2c449d66c44275669811d80f69e2e731345cd0d7ead6b642edf324cfde924b
 textfox https://github.com/adriankarlen/texfox.git
