@@ -1,0 +1,82 @@
+#!/bin/sh -e
+
+print_file() {
+	local path="$1"
+	if [ -x "$path" ]; then echo -en "\e[1;32m"; fi
+	printf '%s\n' "$(basename "$path")"
+	echo -en "\e[m"
+}
+
+print_dir() {
+	local path="$1"
+	local indent="$2"
+	local files=""
+
+	echo -e "\e[1;31m$(basename "$path")\e[m"
+
+	local count=0 pos=1
+	for _ in "$path"/*; do count=$((count + 1)); done
+
+	handle_file() {
+		if [ $dirsfirst -eq 1 ]; then
+			files="$files
+$item"
+		else
+			printf '%s%s' "$indent" "$marker"
+			print_file "$item"
+
+			pos=$((pos + 1))
+		fi
+	}
+
+	for item in "$path"/*; do
+		local last="$([ $pos -eq $count ] && echo 1 || echo 0)"
+		local marker=$([ $last -eq 1 ] && echo "╰─ " || echo "├─ ")
+
+		if [ -d "$item" ]; then
+			local new_indent="$indent$([ $last -eq 1 ] && echo "   " || echo "│  ")"
+
+			printf '%s%s' "$indent" "$marker"
+			print_dir "$item" "$new_indent"
+
+			pos=$((pos + 1))
+		else
+			handle_file "$item"
+		fi
+	done
+
+	if [ $dirsfirst -eq 1 ]; then
+		IFS='
+'
+		for item in $files; do
+			local last="$([ $pos -eq $count ] && echo 1 || echo 0)"
+			local marker=$([ $last -eq 1 ] && echo "╰─ " || echo "├─ ")
+
+			printf '%s%s' "$indent" "$marker"
+			print_file "$item"
+
+			pos=$((pos + 1))
+		done
+	fi
+}
+
+# args
+dirsfirst=0
+
+# if only flags were given we want to tree the current directory
+# otherwise not, so we must make sure we printed something or not.
+printed=0
+
+for arg in $*; do
+	case "$arg" in
+		'--dirsfirst') dirsfirst=1 ;;
+		*)
+			printed=1
+			print_dir "$arg" ''
+			;;
+	esac
+done
+
+if [ $printed -eq 0 ]; then
+	print_dir '.' ''
+fi
