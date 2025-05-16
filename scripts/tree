@@ -12,13 +12,28 @@ print_dir() {
 	local indent="$2"
 	local files=""
 
+	[ ! -e "$path" ] && {
+		echo "Unknown directory '$path'" >&2
+		return
+	}
+
 	echo -e "\e[1;31m$(basename "$path")\e[m"
 
+	items="$(find "$path" -mindepth 1 -maxdepth 1 ! -name '.' ! -name '..')"
+	IFS='
+'
+
 	local count=0 pos=1
-	for _ in "$path"/*; do count=$((count + 1)); done
+	for item in $items; do
+		[ "$flag_a" -eq 0 ] && case "$item" in
+			"$path"/.*) continue ;;
+		esac
+
+		count=$((count + 1))
+	done
 
 	handle_file() {
-		if [ $dirsfirst -eq 1 ]; then
+		if [ $flag_dirsfirst -eq 1 ]; then
 			files="$files
 $item"
 		else
@@ -29,7 +44,11 @@ $item"
 		fi
 	}
 
-	for item in "$path"/*; do
+	for item in $items; do
+		[ "$flag_a" -eq 0 ] && case "$item" in
+			"$path"/.*) continue ;;
+		esac
+
 		local last="$([ $pos -eq $count ] && echo 1 || echo 0)"
 		local marker=$([ $last -eq 1 ] && echo "╰─ " || echo "├─ ")
 
@@ -45,9 +64,7 @@ $item"
 		fi
 	done
 
-	if [ $dirsfirst -eq 1 ]; then
-		IFS='
-'
+	if [ $flag_dirsfirst -eq 1 ]; then
 		for item in $files; do
 			local last="$([ $pos -eq $count ] && echo 1 || echo 0)"
 			local marker=$([ $last -eq 1 ] && echo "╰─ " || echo "├─ ")
@@ -61,7 +78,8 @@ $item"
 }
 
 # args
-dirsfirst=0
+flag_dirsfirst=0
+flag_a=0
 
 # if only flags were given we want to tree the current directory
 # otherwise not, so we must make sure we printed something or not.
@@ -69,7 +87,8 @@ printed=0
 
 for arg in $*; do
 	case "$arg" in
-		'--dirsfirst') dirsfirst=1 ;;
+		'--dirsfirst') flag_dirsfirst=1 ;;
+		'-a') flag_a=1 ;;
 		*)
 			printed=1
 			print_dir "$arg" ''
