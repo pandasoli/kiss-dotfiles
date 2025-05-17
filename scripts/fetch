@@ -20,23 +20,43 @@ eyes() {
 	esac
 }
 
+# It was necessary to use a file to store the
+# color index. A global variable didn't work.
+rainbow_file="/tmp/rainbow"
+
+rb() {
+	set -- 37 31 33 32 36 34 35 90
+
+	rainbow_color=$(cat "$rainbow_file")
+
+	[ $rainbow_color -gt $# ] && rainbow_color=1
+
+	color=$(eval "echo \$$rainbow_color")
+
+	rainbow_color=$(( rainbow_color + 1 ))
+	echo "$rainbow_color" > "$rainbow_file"
+
+	printf '\033[%sm' "$color"
+}
+
 display() {
 	text="
-${c1}${d}♥ os$t       $f0│$t ${c1}KISS $t
-${c3}${d}󱂬 wm$t       $f0│$t $wm
-${c2}${d}󱆃 shell$t    $f0│$t $shell
-${c4}${d} kernel$t   $f0│$t $kern
-${c5}${d} packages$t $f0│$t $pkgs (kiss) $bun_pkgs (bun)
+$(rb)${d}♥ os$t       $f0│$t $distro
+$(rb)${d}󱂬 wm$t       $f0│$t $wm
+$(rb)${d}󱆃 shell$t    $f0│$t $shell
+$(rb)${d} kernel$t   $f0│$t $kern
+$(rb)${d} packages$t $f0│$t $pkgs
+$(rb)${d}󰻠 cpu$t      $f0│$t $cpu
+$(rb)${d}󰻠 gpu$t      $f0│$t $gpu
+$(rb)${d}󰍛 memory$t   $f0│$t $mem_used of $mem used
 
 $b0   $b1   $b2   $b3   $b4   $b5   $b6   $b7   $t
 "
-# ${c6}${d}󰻠 cpu$t      $f0│$t $cpu
-# ${c5}${d}󰍛 memory$t   $f0│$t $mem_used of $mem used
 
 	cat="
 
  /'._
-($(eyes $1) 7
+($(eyes 12) 7
  |'-'\"~.  .
  Uu^~C_J._.\"
 "
@@ -57,36 +77,58 @@ $b0   $b1   $b2   $b3   $b4   $b5   $b6   $b7   $t
 
 # ANSI colors helpers
 for i in 0 1 2 3 4 5 6 7; do
-	eval "c$i=\$(printf '%b' \"\\e[3${i}m\")"
+	eval "c$i=\$(printf '%b' \"\\033[3${i}m\")"
 done
 
 for i in 0 1 2 3 4 5 6 7; do
-	eval "f$i=\$(printf '%b' \"\\e[9${i}m\")"
+	eval "e$i=\$(printf '%b' \"\\033[9${i}m\")"
 done
 
 for i in 0 1 2 3 4 5 6 7; do
-	eval "b$i=\$(printf '%b' \"\\e[10${i}m\")"
+	eval "b$i=\$(printf '%b' \"\\033[10${i}m\")"
 done
 
-d=$(printf '%b' "\e[1m")
-e=$(printf '%b' "\e[2m")
-t=$(printf '%b' "\e[0m")
+d=$(printf '%b' "\033[1m")
+e=$(printf '%b' "\033[2m")
+t=$(printf '%b' "\033[0m")
 
 # Info
-wm=$(ps -e | grep -o "dwl" | head -n 1)
-[ -z "$wm" ] && wm="Unknown WM"
+wm=""
 
-pkgs=$(kiss list | wc -l)
-bun_pkgs=$(bun pm ls -g | sed '1d' | wc -l)
+[ "$(ps -e | grep 'dwl')" != '' ] && wm="dwl"
 
-distro="KISS Linux"
+distro=""
+pm=""
+pm_pkgs=""
+bun_pkgs=""
+
+if command -v kiss >/dev/null; then
+	distro=$(printf "$d${c1}KISS $t")
+	pm="kiss"
+	pm_pkgs=$(kiss list | wc -l)
+	echo "2" > "$rainbow_file"
+elif command -v xbps-install >/dev/null; then
+	distro="$(printf "$d${e7}VOID $t")"
+	pm="xbps"
+	pm_pkgs=$(xbps-query -l | wc -l)
+	echo "1" > "$rainbow_file"
+fi
+
+pkgs="$pm_pkgs ($pm)"
+
+if command -v bun >/dev/null; then
+	bun_pkgs=$(bun pm ls -g | sed '1d' | wc -l)
+	pkgs="$pkgs $bun_pkgs (bun)"
+fi
+
 kern=$(uname -r)
-shell='ash'
+shell=$(basename $SHELL)
 
 mem=$(free -h | grep 'Mem' | awk '{printf $2}')
 mem_used=$(free -h | grep 'Mem' | awk '{printf $3}')
 
 cpu=$(cat /proc/cpuinfo | grep -m1 "model name" | cut -d ':' -f2 | cut -d ' ' -f2-5)
+gpu=$(vainfo 2>/dev/null | grep 'Driver version:' | awk -F' for ' '{print $2}' | awk '{print $1, $2, $3, $4}')
 
 tput clear
-display $1
+display
