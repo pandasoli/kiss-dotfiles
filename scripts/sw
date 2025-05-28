@@ -2,19 +2,18 @@
 
 if [ "$1" == "start" ]; then
 	sound() {
-		pipewire > /tmp/pipewire.log 2>&1
-		pipewire-pulse > /tmp/pipewire-pulse.log 2>&1
+		pipewire > /tmp/pipewire.log 2>&1 &
 		sleep 1
-		wireplumber > /tmp/wireplumber.log 2>&1
+		pipewire-pulse > /tmp/pipewire-pulse.log 2>&1
 	}
 
 	sound &
-	wbg ~/Pics/Wallpapers/red-cape-cat-night.jpg &
+	wbg ~/Pics/Wallpapers/red-montain.jpg &
 
 	wlr-randr --output DVI-D-1 --mode 1920x1080
 
-	/usr/libexec/xdg-desktop-portal > /tmp/xdg-desktop-portal.log 2>&1 &
-	/usr/libexec/xdg-desktop-portal-wlr > /tmp/xdg-desktop-portal.log 2>&1 &
+	/usr/libexec/xdg-desktop-portal     > /tmp/xdg-desktop-portal.log     2>&1 &
+	/usr/libexec/xdg-desktop-portal-wlr > /tmp/xdg-desktop-portal-wlr.log 2>&1 &
 
 	exit
 fi
