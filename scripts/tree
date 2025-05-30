@@ -6,13 +6,15 @@ get_files() {
 	local cmd="find \"$path\" -mindepth 1 -maxdepth 1 ! -name '.' ! -name '..'"
 
 	if [ $flag_gitignore -eq 1 ] && [ -f "$path/.gitignore" ]; then
-		escape() { echo "$1" | sed 's/[][*?]/\\&/g' | sed 's/^\///g'; }
+		escape() {
+      echo "$1" | sed 's/[][*?]/\\&/g' | sed 's/^\///g' | sed 's#/$##'
+    }
 
 		while IFS= read -r line || [ -n "$line" ]; do
 			case "$line" in
 				""|\#*) continue ;;
-				!*) cmd="$cmd ! -path \"$(escape "${line#!}")\""} ;;
-				*)  cmd="$cmd ! -name \"$(escape "$line")\"" ;;
+        !*) cmd="$cmd ! -path \"$(escape "${line#!}")\"" ;;
+        *)  cmd="$cmd ! -name \"$(escape "$line")\"" ;;
 			esac
 		done < "$path"/.gitignore
 	fi

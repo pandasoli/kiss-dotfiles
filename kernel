@@ -7,13 +7,18 @@ Framebuffer:
 	CONFIG_FRAMEBUFFER_CONSOLE=y
 
 AMD:
+	CONFIG_DRM_FBDEV_EMULATION=y
 	CONFIG_DRM_AMDGPU=y
 	CONFIG_DRM_AMDGPU_SI=y
 	CONFIG_DRM_AMD_ISP=y
 	CONFIG_HSA_AMD=y
 	CONFIG_DRM_AMD_DC=y
 
-VAAPI:
+MESA + AMDGPU:
+	| requires CHECKPOINT_RESTORE be enabled
+	| in your kernel or things will subtly break.
+	| See: https://lwn.net/Articles/845448/
+
 	CONFIG_CHECKPOINT_RESTORE=y
 
 Audio:
@@ -30,8 +35,8 @@ ZRAM:
 	CONFIG_CRYPTO_LZ4=y
 
 Microphone:
-	SND_USB_AUDIO=m
-	SND_USB_AUDIO_MIDI_V2=y
+	CONFIG_SND_USB_AUDIO=m
+	# CONFIG_SND_USB_AUDIO_MIDI_V2=y
 
 Webcam:
 	CONFIG_MEDIA_SUPPORT=y
